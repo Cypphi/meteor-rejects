@@ -35,6 +35,7 @@ public class TreeAura extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<Boolean> rotation = sgGeneral.add(new BoolSetting.Builder().name("rotate").description("rotate for block interactions").defaultValue(false).build());
+    private final Setting<Boolean> useBonemeal = sgGeneral.add(new BoolSetting.Builder().name("bonemeal").description("use bonemeal on planted saplings").defaultValue(true).build());
     private final Setting<Integer> plantDelay = sgGeneral.add(new IntSetting.Builder().name("plant-delay").description("delay between planting trees").defaultValue(6).min(0).sliderMax(25).build());
     private final Setting<Integer> bonemealDelay = sgGeneral.add(new IntSetting.Builder().name("bonemeal-delay").description("delay between placing bonemeal on trees").defaultValue(3).min(0).sliderMax(25).build());
     private final Setting<Integer> rRange = sgGeneral.add(new IntSetting.Builder().name("radius").description("how far you can place horizontally").defaultValue(4).min(1).sliderMax(5).build());
@@ -67,7 +68,7 @@ public class TreeAura extends Module {
             plantTimer = plantDelay.get();
         }
 
-        if (bonemealTimer <= 0) {
+        if (useBonemeal.get() && bonemealTimer <= 0) {
             BlockPos p = findPlantedSapling();
             if (p == null) return;
             doBonemeal(p);

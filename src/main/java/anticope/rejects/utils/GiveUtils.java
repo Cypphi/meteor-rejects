@@ -5,8 +5,11 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.Item;
@@ -83,9 +86,7 @@ public class GiveUtils {
             PRESETS.put(preset.getLeft(), (preview) -> {
                 if (preview) preset.getMiddle().getDefaultStack();
                 ItemStack item = preset.getMiddle().getDefaultStack();
-                try {
-                    item.set(DataComponentTypes.ENTITY_DATA, NbtComponent.of(StringNbtReader.parse(preset.getRight())));
-                } catch (CommandSyntaxException e) { }
+                setEntityData(item, preset.getRight());
                 item.set(DataComponentTypes.CUSTOM_NAME, Text.literal(toName(preset.getLeft())));
                 return item;
             });
@@ -95,9 +96,7 @@ public class GiveUtils {
             PRESETS.put(preset.getLeft(), (preview) -> {
                 if (preview) preset.getMiddle().getDefaultStack();
                 ItemStack item = preset.getMiddle().getDefaultStack();
-                try {
-                    item.set(DataComponentTypes.BLOCK_ENTITY_DATA, NbtComponent.of(StringNbtReader.parse(preset.getRight())));
-                } catch (CommandSyntaxException e) { }
+                setBlockEntityData(item, preset.getRight());
                 item.set(DataComponentTypes.CUSTOM_NAME, Text.literal(toName(preset.getLeft())));
                 return item;
             });
@@ -109,9 +108,7 @@ public class GiveUtils {
             ItemStack item = Items.SPIDER_SPAWN_EGG.getDefaultStack();
             String nick = mc.player.getName().getString();
 
-            try {
-                item.set(DataComponentTypes.ENTITY_DATA, NbtComponent.of(StringNbtReader.parse("{Time:1,BlockState:{Name:\"minecraft:spawner\"},id:\"minecraft:falling_block\",TileEntityData:{SpawnCount:20,SpawnData:{id:\"minecraft:villager\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:redstone_block\"},id:\"minecraft:falling_block\",Passengers:[{id:\"minecraft:fox\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:activator_rail\"},id:\"minecraft:falling_block\",Passengers:[{Command:\"execute as @e run op "+nick+"\",id:\"minecraft:command_block_minecart\"}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]},MaxSpawnDelay:100,SpawnRange:10,Delay:1,MinSpawnDelay:100}}")));
-            } catch (CommandSyntaxException e) { }
+            setEntityData(item, "{Time:1,BlockState:{Name:\"minecraft:spawner\"},id:\"minecraft:falling_block\",TileEntityData:{SpawnCount:20,SpawnData:{id:\"minecraft:villager\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:redstone_block\"},id:\"minecraft:falling_block\",Passengers:[{id:\"minecraft:fox\",Passengers:[{Time:1,BlockState:{Name:\"minecraft:activator_rail\"},id:\"minecraft:falling_block\",Passengers:[{Command:\"execute as @e run op "+nick+"\",id:\"minecraft:command_block_minecart\"}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]}]}],NoAI:1b,Health:1.0f,ActiveEffects:[{Duration:1000,Id:20b,Amplifier:4b}]},MaxSpawnDelay:100,SpawnRange:10,Delay:1,MinSpawnDelay:100}}");
             item.set(DataComponentTypes.CUSTOM_NAME, Text.of("Force OP"));
             return item;
         });
@@ -201,7 +198,7 @@ public class GiveUtils {
 
                 var changes = ComponentChanges.builder()
                         .add(DataComponentTypes.CUSTOM_NAME, Text.literal(String.format("%s", toName(id.getPath()))))
-                        .add(DataComponentTypes.ENTITY_DATA, NbtComponent.of(entityTag))
+                        .add(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(Registries.ENTITY_TYPE.get(id), entityTag))
                         .build();
 
                 egg.applyChanges(changes);
@@ -220,6 +217,28 @@ public class GiveUtils {
 
     private static String toName(Object id) {
         return WordUtils.capitalizeFully(id.toString().replace("_", " "));
+    }
+
+    private static void setEntityData(ItemStack item, String nbt) {
+        try {
+            NbtCompound entityTag = StringNbtReader.readCompound(nbt);
+            String id = entityTag.getString("id", "");
+            if (id.isEmpty()) return;
+            EntityType<?> type = Registries.ENTITY_TYPE.get(Identifier.of(id));
+            item.set(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(type, entityTag));
+        } catch (CommandSyntaxException ignored) {
+        }
+    }
+
+    private static void setBlockEntityData(ItemStack item, String nbt) {
+        try {
+            NbtCompound blockEntityTag = StringNbtReader.readCompound(nbt);
+            String id = blockEntityTag.getString("id", "");
+            if (id.isEmpty()) return;
+            BlockEntityType<?> type = Registries.BLOCK_ENTITY_TYPE.get(Identifier.of(id));
+            item.set(DataComponentTypes.BLOCK_ENTITY_DATA, TypedEntityData.create(type, blockEntityTag));
+        } catch (CommandSyntaxException ignored) {
+        }
     }
 
 }

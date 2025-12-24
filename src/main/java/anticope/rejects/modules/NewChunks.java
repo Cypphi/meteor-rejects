@@ -10,7 +10,6 @@ import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
@@ -181,7 +180,11 @@ public class NewChunks extends Module {
 			if (!newChunks.contains(pos) && mc.world.getChunkManager().getChunk(packet.getChunkX(), packet.getChunkZ()) == null) {
 				WorldChunk chunk = new WorldChunk(mc.world, pos);
 				try {
-					taskExecutor.execute(() -> chunk.loadFromPacket(packet.getChunkData().getSectionsDataBuf(), new NbtCompound(), packet.getChunkData().getBlockEntities(packet.getChunkX(), packet.getChunkZ())));
+					taskExecutor.execute(() -> chunk.loadFromPacket(
+						packet.getChunkData().getSectionsDataBuf(),
+						packet.getChunkData().getHeightmap(),
+						packet.getChunkData().getBlockEntities(packet.getChunkX(), packet.getChunkZ())
+					));
 				} catch (ArrayIndexOutOfBoundsException e) {
 					return;
 				}

@@ -22,7 +22,7 @@ public class GameModeListSetting extends Setting<List<GameMode>> {
         String[] values = str.split(",");
         List<GameMode> modes = new ArrayList<>(values.length);
         for (String s : values) {
-            GameMode mode = GameMode.byName(s);
+            GameMode mode = GameMode.byId(s, null);
             if (mode != null) modes.add(mode);
         }
         return modes;
@@ -42,7 +42,7 @@ public class GameModeListSetting extends Setting<List<GameMode>> {
     public NbtCompound save(NbtCompound tag) {
         NbtList valueTag = new NbtList();
         for (GameMode mode : get()) {
-            valueTag.add(NbtString.of(mode.getName()));
+            valueTag.add(NbtString.of(mode.getId()));
         }
         tag.put("value", valueTag);
 
@@ -53,9 +53,9 @@ public class GameModeListSetting extends Setting<List<GameMode>> {
     public List<GameMode> load(NbtCompound tag) {
         get().clear();
 
-        NbtList valueTag = tag.getList("value", 8);
+        NbtList valueTag = tag.getListOrEmpty("value");
         for (NbtElement tagI : valueTag) {
-            GameMode mode = GameMode.byName(tagI.asString());
+            GameMode mode = GameMode.byId(tagI.asString().orElse(""), null);
             if (mode != null)
                 get().add(mode);
         }

@@ -3,6 +3,7 @@ package anticope.rejects.utils.server;
 import anticope.rejects.MeteorRejectsAddon;
 import net.minecraft.client.network.MultiplayerServerListPinger;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.network.NetworkingBackend;
 
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,6 +13,7 @@ public class LegacyServerPinger {
     private ServerInfo server;
     private boolean done = false;
     private boolean failed = false;
+    private final NetworkingBackend backend = NetworkingBackend.remote(false);
 
     public void ping(String ip) {
         ping(ip, 25565);
@@ -29,7 +31,7 @@ public class LegacyServerPinger {
         MeteorRejectsAddon.LOG.info("Pinging {}:{}...", ip, port);
 
         try {
-            pinger.add(server, () -> {}, () -> {});
+            pinger.add(server, () -> {}, () -> {}, backend);
             MeteorRejectsAddon.LOG.info("Ping successful: {}:{}", ip, port);
 
         } catch (UnknownHostException e) {

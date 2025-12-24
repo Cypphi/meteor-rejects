@@ -16,11 +16,13 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
+import net.minecraft.util.Uuids;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -98,7 +100,7 @@ public class HeadScreen extends WindowScreen {
                 WButton equip = t.add(theme.button("Equip")).widget();
                 equip.tooltip = "Equip client-side.";
                 equip.action = () -> {
-                    mc.player.getInventory().armor.set(3, head);
+                    mc.player.equipStack(EquipmentSlot.HEAD, head);
                 };
                 t.row();
             }
@@ -111,7 +113,7 @@ public class HeadScreen extends WindowScreen {
         ItemStack head = Items.PLAYER_HEAD.getDefaultStack();
         NbtCompound tag = new NbtCompound();
         NbtCompound skullOwner = new NbtCompound();
-        skullOwner.putUuid("Id", UUID.fromString(uuid));
+        skullOwner.putIntArray("Id", Uuids.toIntArray(UUID.fromString(uuid)));
         NbtCompound properties = new NbtCompound();
         NbtList textures = new NbtList();
         NbtCompound Value = new NbtCompound();

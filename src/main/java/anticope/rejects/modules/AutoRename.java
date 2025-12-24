@@ -127,30 +127,30 @@ public class AutoRename extends Module {
             return "";
         }
         NbtCompound compound = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        if (compound == null) {
+        if (compound == null || compound.isEmpty()) {
             return "";
         }
-        compound = compound.getCompound("BlockEntityTag");
-        if (compound == null) {
+        compound = compound.getCompoundOrEmpty("BlockEntityTag");
+        if (compound.isEmpty()) {
             return "";
         }
-        var list = compound.getList("Items", NbtElement.COMPOUND_TYPE);
-        if (list == null) {
+        var list = compound.getListOrEmpty("Items");
+        if (list.isEmpty()) {
             return "";
         }
         var minslot = Byte.MAX_VALUE;
         var name = "";
         for (int i = 0; i < list.size(); i++) {
-            var invItem = list.getCompound(i);
-            var invSlot = invItem.getByte("Slot");
+            var invItem = list.getCompoundOrEmpty(i);
+            var invSlot = invItem.getByte("Slot", (byte) 0);
             if (minslot < invSlot) {
                 continue;
             }
-            var itemId = invItem.getString("id");
-            if (itemId == null) {
+            var itemId = invItem.getString("id", "");
+            if (itemId.isEmpty()) {
                 continue;
             }
-            name = String.valueOf(invItem.getCompound("Name"));
+            name = invItem.getCompoundOrEmpty("Name").toString();
             minslot = invSlot;
         }
         return name;

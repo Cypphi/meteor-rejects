@@ -9,8 +9,9 @@ import meteordevelopment.meteorclient.commands.Command;
 import net.minecraft.command.CommandSource;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
 import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -40,12 +41,15 @@ public class GiveCommand extends Command {
             ItemStack inHand = mc.player.getMainHandStack();
             ItemStack item = new ItemStack(Items.STRIDER_SPAWN_EGG);
             NbtCompound ct = new NbtCompound();
+            EntityType<?> entityType;
 
             if (inHand.getItem() instanceof BlockItem) {
                 ct.putInt("Time", 1);
                 ct.putString("id", "minecraft:falling_block");
-                ct.put("BlockState", new NbtCompound());
-                ct.getCompound("BlockState").putString("Name", Registries.ITEM.getId(inHand.getItem()).toString());
+                NbtCompound blockState = new NbtCompound();
+                blockState.putString("Name", Registries.ITEM.getId(inHand.getItem()).toString());
+                ct.put("BlockState", blockState);
+                entityType = EntityType.FALLING_BLOCK;
 
             } else {
                 ct.putString("id", "minecraft:item");
@@ -54,13 +58,12 @@ public class GiveCommand extends Command {
                 itemTag.putInt("Count", inHand.getCount());
 
                 ct.put("Item", itemTag);
+                entityType = EntityType.ITEM;
             }
-            NbtCompound t = new NbtCompound();
-            t.put("EntityTag", ct);
 
             var changes = ComponentChanges.builder()
                     .add(DataComponentTypes.CUSTOM_NAME, inHand.getName())
-                    .add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(t))
+                    .add(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(entityType, ct))
                     .build();
 
             item.applyChanges(changes);
@@ -88,7 +91,7 @@ public class GiveCommand extends Command {
 
             var changes = ComponentChanges.builder()
                     .add(DataComponentTypes.CUSTOM_NAME, Text.literal(message))
-                    .add(DataComponentTypes.ENTITY_DATA, NbtComponent.of(tag))
+                    .add(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(EntityType.ARMOR_STAND, tag))
                     .build();
 
             stack.applyChanges(changes);
@@ -108,7 +111,7 @@ public class GiveCommand extends Command {
 
             var changes = ComponentChanges.builder()
                     .add(DataComponentTypes.CUSTOM_NAME, Text.literal(message))
-                    .add(DataComponentTypes.ENTITY_DATA, NbtComponent.of(tag))
+                    .add(DataComponentTypes.ENTITY_DATA, TypedEntityData.create(EntityType.WITHER, tag))
                     .build();
             stack.applyChanges(changes);
 
@@ -122,7 +125,7 @@ public class GiveCommand extends Command {
             ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD);
 
             var changes = ComponentChanges.builder()
-                    .add(DataComponentTypes.PROFILE, new ProfileComponent(new GameProfile(getUUID(playerName), playerName)))
+                    .add(DataComponentTypes.PROFILE, ProfileComponent.ofStatic(new GameProfile(getUUID(playerName), playerName)))
                     .build();
 
             itemStack.applyChanges(changes);

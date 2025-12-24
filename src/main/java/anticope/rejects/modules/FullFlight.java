@@ -6,7 +6,7 @@ import com.google.common.collect.Streams;
 import meteordevelopment.meteorclient.events.entity.player.PlayerMoveEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.mixin.ClientPlayerEntityAccessor;
-import meteordevelopment.meteorclient.mixin.PlayerMoveC2SPacketAccessor;
+import anticope.rejects.mixin.PlayerMoveC2SPacketAccessor;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -64,7 +64,7 @@ public class FullFlight extends Module {
 
     // Copied from ServerPlayNetworkHandler#isEntityOnAir
     private boolean isEntityOnAir(Entity entity) {
-        return entity.getWorld().getStatesInBox(entity.getBoundingBox().expand(0.0625).stretch(0.0, -0.55, 0.0)).allMatch(AbstractBlock.AbstractBlockState::isAir);
+        return entity.getEntityWorld().getStatesInBox(entity.getBoundingBox().expand(0.0625).stretch(0.0, -0.55, 0.0)).allMatch(AbstractBlock.AbstractBlockState::isAir);
     }
 
     private int delayLeft = 20;
@@ -136,7 +136,7 @@ public class FullFlight extends Module {
     private void onPlayerMove(PlayerMoveEvent event) {
         if (antiKickMode.get() == AntiKickMode.PaperNew) {
             // Resend movement packets
-            ((ClientPlayerEntityAccessor) mc.player).setTicksSinceLastPositionPacketSent(20);
+            ((ClientPlayerEntityAccessor) mc.player).meteor$setTicksSinceLastPositionPacketSent(20);
         }
         if (floatingTicks >= 20) {
             switch (antiKickMode.get()) {
